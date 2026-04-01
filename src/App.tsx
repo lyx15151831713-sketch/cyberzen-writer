@@ -348,7 +348,7 @@ export default function App() {
       <div 
         onMouseEnter={() => setHoverTop(true)}
         onMouseLeave={() => setHoverTop(false)}
-        className="absolute top-0 left-0 right-0 h-[100px] z-50 flex justify-center items-start pt-[44px]"
+        className="absolute top-0 left-0 right-0 h-[100px] z-50 flex justify-center items-start pt-[44px] pointer-events-none"
       >
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
@@ -356,7 +356,7 @@ export default function App() {
             opacity: (hoverTop && isUIActive) ? 1 : 0, 
             y: (hoverTop && isUIActive) ? 0 : -10 
           }}
-          className="glass-dark rounded-full px-6 py-3 flex items-center gap-4 border border-white/5"
+          className="glass-dark rounded-full px-6 py-3 flex items-center gap-4 border border-white/5 pointer-events-auto"
         >
           <button 
             onClick={() => setMode('rain')}
@@ -388,7 +388,7 @@ export default function App() {
       <div 
         onMouseEnter={() => setHoverLeft(true)}
         onMouseLeave={() => setHoverLeft(false)}
-        className="absolute left-0 top-[50px] bottom-0 w-[160px] z-40 flex items-center justify-center pl-8"
+        className="absolute left-0 top-[50px] bottom-0 w-[160px] z-40 flex items-center justify-center pl-8 pointer-events-none"
       >
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -396,7 +396,7 @@ export default function App() {
             opacity: (hoverLeft && isUIActive) ? 1 : 0, 
             x: (hoverLeft && isUIActive) ? 0 : -20 
           }}
-          className="flex flex-col gap-4 p-6 glass-dark rounded-[32px] border border-white/5 min-w-[120px]"
+          className="flex flex-col gap-4 p-6 glass-dark rounded-[32px] border border-white/5 min-w-[120px] pointer-events-auto"
         >
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center mb-2">
@@ -582,7 +582,7 @@ export default function App() {
       <div 
         onMouseEnter={() => setHoverBottom(true)}
         onMouseLeave={() => setHoverBottom(false)}
-        className="absolute bottom-0 left-0 right-0 h-[200px] z-40 flex flex-col items-center justify-end pb-8"
+        className="absolute bottom-0 left-0 right-0 h-[200px] z-40 flex flex-col items-center justify-end pb-8 pointer-events-none"
       >
         {/* Zen Timer - Moved above Vibe Mixer */}
         <motion.div
@@ -591,7 +591,7 @@ export default function App() {
             opacity: (isTimerFinished || (hoverBottom && isUIActive)) ? 1 : 0, 
             y: (isTimerFinished || (hoverBottom && isUIActive)) ? 0 : 10 
           }}
-          className="mb-4"
+          className="mb-4 pointer-events-auto"
         >
           <motion.button
             onClick={handleTimerClick}
@@ -680,7 +680,7 @@ export default function App() {
             opacity: (hoverBottom && isUIActive) ? 1 : 0, 
             y: (hoverBottom && isUIActive) ? 0 : 10 
           }}
-          className="flex gap-12 glass-dark px-10 py-4 rounded-full items-center border border-white/5 relative"
+          className="flex gap-12 glass-dark px-10 py-4 rounded-full items-center border border-white/5 relative pointer-events-auto"
         >
           <div className="flex flex-col gap-1 items-center">
             <span className="text-[9px] uppercase tracking-tighter opacity-40">Intensity</span>
@@ -693,9 +693,9 @@ export default function App() {
           <div className="flex flex-col gap-1 items-center">
             <span className="text-[9px] uppercase tracking-tighter opacity-40">Blur</span>
             <input 
-              type="range" min="0" max="50" step="1" 
+              type="range" min="0" max="100" step="1" 
               value={blur} onChange={(e) => setBlur(parseInt(e.target.value))}
-              className="w-24 accent-white/50"
+              className="w-24 accent-white/50 pointer-events-auto"
             />
           </div>
           
