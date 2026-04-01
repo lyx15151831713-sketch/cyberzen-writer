@@ -491,10 +491,8 @@ export default function App() {
           >
             {/* Front: Editor */}
             <div 
-              className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col"
+              className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col z-10"
               style={{ 
-                backdropFilter: `blur(${blur}px)`,
-                WebkitBackdropFilter: `blur(${blur}px)`,
                 '--glass-blur': `${blur}px` 
               } as React.CSSProperties}
             >
@@ -560,7 +558,7 @@ export default function App() {
 
             {/* Back: Flashcard */}
             <div 
-              className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col items-center justify-center text-center rotate-y-180"
+              className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col items-center justify-center text-center rotate-y-180 z-10"
               style={{ '--glass-blur': `${blur}px` } as React.CSSProperties}
             >
               <div className="space-y-6">
