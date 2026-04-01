@@ -11,6 +11,8 @@
 :root {
   --bg-color: #050505;
   --text-color: #ffffff;
+  /* 注入全局默认 fallback，防止 React 还没挂载时样式崩溃 */
+  --glass-blur: 10px; 
 }
 
 body {
@@ -47,14 +49,25 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
+/* 极致稳定版毛玻璃（已修复生产环境丢帧、失效和 iOS/Safari 兼容性问题） */
 .glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(var(--glass-blur, 20px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  /* Hardware acceleration and isolation for production stability */
+  /* 底色稍微调暗一点，让上方文字更清晰，且保证 blur 能生效 */
+  background: rgba(255, 255, 255, 0.05); 
+  
+  /* 核心模糊属性与动态变量绑定 */
+  backdrop-filter: blur(var(--glass-blur, 10px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  
+  /* 边框和极弱的阴影，增加空间质感 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  
+  /* 强制 GPU 硬件加速与图层隔离（最核心的防弹衣） */
   transform: translateZ(0);
-  will-change: backdrop-filter, transform;
+  -webkit-transform: translateZ(0); /* 兼容老版本 Webkit */
+  
+  /* 提前告知显卡需要单独渲染的属性，严防 WebGL 吞噬性能 */
+  will-change: transform, backdrop-filter, -webkit-backdrop-filter;
 }
 
 .glass-dark {
@@ -62,4 +75,6 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }

@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { RainShader, SnowShader } from './components/BackgroundShader';
+import { useTexture } from '@react-three/drei';
 
 // --- Types ---
 type Mode = 'rain' | 'snow';
@@ -34,8 +35,6 @@ type FontSize = 'small' | 'medium' | 'large';
 type FontFamily = 'serif' | 'sans' | 'mono' | 'klee';
 
 // --- Components ---
-
-import { useTexture } from '@react-three/drei';
 
 const Background = ({ mode, intensity, mouse }: { mode: Mode; intensity: number; mouse: THREE.Vector2 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -133,10 +132,20 @@ export default function App() {
   const rainAmbientRef = useRef<HTMLAudioElement | null>(null);
   const snowAmbientRef = useRef<HTMLAudioElement | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // DOM Refs for Glassmorphism Performance bypass
   const frontGlassRef = useRef<HTMLDivElement>(null);
   const backGlassRef = useRef<HTMLDivElement>(null);
 
   // --- Effects ---
+
+  // Initialize Blur styling safely outside of React's render cycle
+  useEffect(() => {
+    const safeVal = Math.max(0.1, blur);
+    if (frontGlassRef.current) frontGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+    if (backGlassRef.current) backGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Mouse tracking for shader interaction
   useEffect(() => {
@@ -162,7 +171,7 @@ export default function App() {
     localStorage.setItem('zen-snow-volume', snowVolume.toString());
   }, [volume, rainVolume, snowVolume]);
 
-  // Global UI Fade-out logic (still useful for general inactivity)
+  // Global UI Fade-out logic
   useEffect(() => {
     const handleActivity = () => {
       setIsUIActive(true);
@@ -203,10 +212,7 @@ export default function App() {
       if (audioRef.current) {
         audioRef.current.volume = volume;
         try {
-          // Only play if not already playing or src changed
-          if (audioRef.current.paused) {
-            await audioRef.current.play();
-          }
+          if (audioRef.current.paused) await audioRef.current.play();
         } catch (err) {
           console.log("Music play blocked by browser.");
         }
@@ -224,20 +230,15 @@ export default function App() {
           try {
             if (rain.paused) await rain.play();
             snow.pause();
-          } catch (err) {
-            console.log("Rain ambient blocked.");
-          }
+          } catch (err) {}
         } else {
           try {
             if (snow.paused) await snow.play();
             rain.pause();
-          } catch (err) {
-            console.log("Snow ambient blocked.");
-          }
+          } catch (err) {}
         }
       }
     };
-
     updateAudio();
   }, [volume, rainVolume, snowVolume, mode]);
 
@@ -269,7 +270,6 @@ export default function App() {
   const handleClear = () => {
     if (content.trim() === '') return;
     setIsClearing(true);
-    // Wait for smoke animation to finish (slowed down to 3s)
     setTimeout(() => {
       setContent('');
       setIsClearing(false);
@@ -494,10 +494,8 @@ export default function App() {
             {/* Front: Editor */}
             <div 
               ref={frontGlassRef}
+              /* 移除了导致冲突的 style 属性，让 DOM 直接接管 */
               className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col z-10"
-              style={{ 
-                '--glass-blur': `${Math.max(0.1, blur)}px` 
-              } as React.CSSProperties}
             >
               <motion.textarea
                 value={content}
@@ -562,8 +560,8 @@ export default function App() {
             {/* Back: Flashcard */}
             <div 
               ref={backGlassRef}
+              /* 同样移除了这里的 style 属性 */
               className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col items-center justify-center text-center rotate-y-180 z-10"
-              style={{ '--glass-blur': `${Math.max(0.1, blur)}px` } as React.CSSProperties}
             >
               <div className="space-y-6">
                 <h3 className="font-serif italic text-3xl text-white/80">Flow Insight</h3>
@@ -590,7 +588,7 @@ export default function App() {
         onMouseLeave={() => setHoverBottom(false)}
         className="absolute bottom-0 left-0 right-0 h-[200px] z-40 flex flex-col items-center justify-end pb-8 pointer-events-none"
       >
-        {/* Zen Timer - Moved above Vibe Mixer */}
+        {/* Zen Timer */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ 
@@ -693,7 +691,7 @@ export default function App() {
             <input 
               type="range" min="0" max="1" step="0.01" 
               value={intensity} onChange={(e) => setIntensity(parseFloat(e.target.value))}
-              className="w-24 accent-white/50"
+              className="w-24 accent-white/50 cursor-pointer"
             />
           </div>
           <div className="flex flex-col gap-1 items-center">
@@ -701,15 +699,16 @@ export default function App() {
             <input 
               type="range" min="0" max="100" step="1" 
               defaultValue={blur}
-              onInput={(e) => {
-                const val = parseInt((e.target as HTMLInputElement).value);
+              onChange={(e) => {
+                // 完全绕过 React 的状态更新机制，每秒 60 帧丝滑改变 DOM，不会被打断
+                const val = parseInt(e.target.value);
                 const safeVal = Math.max(0.1, val);
                 if (frontGlassRef.current) frontGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
                 if (backGlassRef.current) backGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
               }}
               onMouseUp={(e) => setBlur(parseInt((e.target as HTMLInputElement).value))}
               onTouchEnd={(e) => setBlur(parseInt((e.target as HTMLInputElement).value))}
-              className="w-24 accent-white/50 pointer-events-auto"
+              className="w-24 accent-white/50 cursor-pointer pointer-events-auto"
             />
           </div>
           
@@ -717,7 +716,7 @@ export default function App() {
             <button 
               onClick={() => setIsAudioSettingsOpen(!isAudioSettingsOpen)}
               className={cn(
-                "p-2 rounded-full transition-all duration-300",
+                "p-2 rounded-full transition-all duration-300 cursor-pointer",
                 isAudioSettingsOpen ? "bg-white/20 text-white" : "hover:bg-white/10 text-white/60"
               )}
             >
@@ -740,7 +739,7 @@ export default function App() {
                     <input 
                       type="range" min="0" max="1" step="0.01" 
                       value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))}
-                      className="w-full accent-white/50"
+                      className="w-full accent-white/50 cursor-pointer"
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -751,7 +750,7 @@ export default function App() {
                     <input 
                       type="range" min="0" max="1" step="0.01" 
                       value={rainVolume} onChange={(e) => setRainVolume(parseFloat(e.target.value))}
-                      className="w-full accent-white/50"
+                      className="w-full accent-white/50 cursor-pointer"
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -762,7 +761,7 @@ export default function App() {
                     <input 
                       type="range" min="0" max="1" step="0.01" 
                       value={snowVolume} onChange={(e) => setSnowVolume(parseFloat(e.target.value))}
-                      className="w-full accent-white/50"
+                      className="w-full accent-white/50 cursor-pointer"
                     />
                   </div>
                 </motion.div>
@@ -770,7 +769,7 @@ export default function App() {
             </AnimatePresence>
           </div>
 
-          <button onClick={exportToTxt} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+          <button onClick={exportToTxt} className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer">
             <Download size={16} className="opacity-60" />
           </button>
         </motion.div>
