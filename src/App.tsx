@@ -133,6 +133,8 @@ export default function App() {
   const rainAmbientRef = useRef<HTMLAudioElement | null>(null);
   const snowAmbientRef = useRef<HTMLAudioElement | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const frontGlassRef = useRef<HTMLDivElement>(null);
+  const backGlassRef = useRef<HTMLDivElement>(null);
 
   // --- Effects ---
 
@@ -491,9 +493,10 @@ export default function App() {
           >
             {/* Front: Editor */}
             <div 
+              ref={frontGlassRef}
               className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col z-10"
               style={{ 
-                '--glass-blur': `${blur}px` 
+                '--glass-blur': `${Math.max(0.1, blur)}px` 
               } as React.CSSProperties}
             >
               <motion.textarea
@@ -558,8 +561,9 @@ export default function App() {
 
             {/* Back: Flashcard */}
             <div 
+              ref={backGlassRef}
               className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col items-center justify-center text-center rotate-y-180 z-10"
-              style={{ '--glass-blur': `${blur}px` } as React.CSSProperties}
+              style={{ '--glass-blur': `${Math.max(0.1, blur)}px` } as React.CSSProperties}
             >
               <div className="space-y-6">
                 <h3 className="font-serif italic text-3xl text-white/80">Flow Insight</h3>
@@ -696,7 +700,15 @@ export default function App() {
             <span className="text-[9px] uppercase tracking-tighter opacity-40">Blur</span>
             <input 
               type="range" min="0" max="100" step="1" 
-              value={blur} onChange={(e) => setBlur(parseInt(e.target.value))}
+              defaultValue={blur}
+              onInput={(e) => {
+                const val = parseInt((e.target as HTMLInputElement).value);
+                const safeVal = Math.max(0.1, val);
+                if (frontGlassRef.current) frontGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+                if (backGlassRef.current) backGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+              }}
+              onMouseUp={(e) => setBlur(parseInt((e.target as HTMLInputElement).value))}
+              onTouchEnd={(e) => setBlur(parseInt((e.target as HTMLInputElement).value))}
               className="w-24 accent-white/50 pointer-events-auto"
             />
           </div>
