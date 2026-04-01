@@ -492,7 +492,11 @@ export default function App() {
             {/* Front: Editor */}
             <div 
               className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col"
-              style={{ '--glass-blur': `${blur}px` } as React.CSSProperties}
+              style={{ 
+                backdropFilter: `blur(${blur}px)`,
+                WebkitBackdropFilter: `blur(${blur}px)`,
+                '--glass-blur': `${blur}px` 
+              } as React.CSSProperties}
             >
               <motion.textarea
                 value={content}
@@ -509,7 +513,7 @@ export default function App() {
                   opacity: 1,
                   y: 0,
                   x: 0,
-                  filter: "blur(0px) brightness(1) contrast(1)",
+                  filter: "none",
                   scale: 1,
                   skewX: 0,
                 }}
