@@ -75,6 +75,7 @@ export default function App() {
   const [fontSize, setFontSize] = useState<FontSize>('medium');
   const [fontFamily, setFontFamily] = useState<FontFamily>('sans');
   const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+  const [isMobileSettingsOpen, setIsMobileSettingsOpen] = useState(false);
   const [isUIActive, setIsUIActive] = useState(true);
   const [isFlipped, setIsFlipped] = useState(false);
   const [timer, setTimer] = useState(25 * 60);
@@ -103,6 +104,8 @@ export default function App() {
     localStorage.setItem('zen-volume', volume.toString());
     localStorage.setItem('zen-rain-volume', rainVolume.toString());
     localStorage.setItem('zen-snow-volume', snowVolume.toString());
+    // 同步全局磨砂变量，确保全站毛玻璃效果一致
+    document.documentElement.style.setProperty('--glass-blur', `${blur}px`);
   }, [mode, blur, content, volume, rainVolume, snowVolume]);
 
   // Audio Control
@@ -204,23 +207,34 @@ export default function App() {
       </AnimatePresence>
 
       {/* Top Switcher */}
-      <div className="absolute top-0 left-0 right-0 h-32 z-50 flex justify-center items-start pt-12 pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 h-24 md:h-32 z-50 flex justify-center items-start pt-6 md:pt-12 pointer-events-none">
         <motion.div 
           animate={{ opacity: isUIActive ? 1 : 0, y: isUIActive ? 0 : -20 }}
-          className="glass-dark rounded-full px-6 py-3 flex items-center gap-4 border border-white/5 pointer-events-auto"
+          className="glass-dark rounded-full px-4 md:px-6 py-2 md:py-3 flex items-center gap-3 md:gap-4 border border-white/5 pointer-events-auto scale-90 md:scale-100"
         >
           <button onClick={() => setMode('rain')} className={cn("flex items-center gap-2 transition-all", mode === 'rain' ? "text-white" : "text-white/40 hover:text-white/60")}>
-            <CloudRain size={18} /> <span className="text-sm">Rainy</span>
+            <CloudRain size={16} className="md:w-[18px] md:h-[18px]" /> <span className="text-xs md:text-sm">Rainy</span>
           </button>
           <div className="w-[1px] h-4 bg-white/10" />
           <button onClick={() => setMode('snow')} className={cn("flex items-center gap-2 transition-all", mode === 'snow' ? "text-white" : "text-white/40 hover:text-white/60")}>
-            <Snowflake size={18} /> <span className="text-sm">Snowy</span>
+            <Snowflake size={16} className="md:w-[18px] md:h-[18px]" /> <span className="text-xs md:text-sm">Snowy</span>
           </button>
         </motion.div>
       </div>
 
-      {/* Left Typography Settings */}
-      <div className="absolute left-0 top-0 bottom-0 w-40 z-40 flex items-center justify-center pl-8 pointer-events-none">
+      {/* Mobile Settings Toggle */}
+      <div className="absolute left-4 top-6 z-50 md:hidden">
+        <motion.button
+          animate={{ opacity: isUIActive ? 1 : 0 }}
+          onClick={() => setIsMobileSettingsOpen(!isMobileSettingsOpen)}
+          className="p-3 glass-dark rounded-full border border-white/10 text-white/60"
+        >
+          <Type size={20} />
+        </motion.button>
+      </div>
+
+      {/* Left Typography Settings (PC Sidebar) */}
+      <div className="absolute left-0 top-0 bottom-0 w-40 z-40 hidden md:flex items-center justify-center pl-8 pointer-events-none">
         <motion.div animate={{ opacity: isUIActive ? 1 : 0, x: isUIActive ? 0 : -20 }} className="flex flex-col gap-6 p-6 glass-dark rounded-[32px] pointer-events-auto">
            <div className="flex flex-col items-center gap-4">
              <Type size={20} className="opacity-40" />
@@ -257,10 +271,43 @@ export default function App() {
         </motion.div>
       </div>
 
+      {/* Mobile Settings Overlay */}
+      <AnimatePresence>
+        {isMobileSettingsOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="absolute left-4 top-20 z-50 md:hidden glass-dark p-6 rounded-3xl border border-white/10 flex flex-col gap-6 min-w-[140px]"
+          >
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] uppercase tracking-widest opacity-30">Font</span>
+              <div className="grid grid-cols-2 gap-2">
+                {['serif', 'sans', 'mono', 'klee'].map(f => (
+                  <button key={f} onClick={() => setFontFamily(f as FontFamily)} className={cn("py-2 px-2 rounded-lg text-[10px] uppercase transition-all", fontFamily === f ? "bg-white/20 text-white" : "text-white/40")}>
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] uppercase tracking-widest opacity-30">Size</span>
+              <div className="flex bg-black/40 rounded-lg p-1 gap-1">
+                {(['small', 'medium', 'large'] as FontSize[]).map((s, i) => (
+                  <button key={s} onClick={() => setFontSize(s)} className={cn("flex-1 py-1 rounded-md text-[10px] transition-all", fontSize === s ? "bg-white/20 text-white" : "text-white/40")}>
+                    {['S', 'M', 'L'][i]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Center Editor - The Masterpiece */}
       <main className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-        <div className="flex flex-col items-center gap-5 w-full max-w-3xl pointer-events-none px-4">
-          <div className="relative w-full h-[60vh] perspective-1000 pointer-events-auto">
+        <div className="flex flex-col items-center gap-4 md:gap-5 w-full max-w-3xl pointer-events-none px-4">
+          <div className="relative w-full h-[50vh] md:h-[60vh] perspective-1000 pointer-events-auto">
             <motion.div animate={{ rotateY: isFlipped ? 180 : 0 }} className="relative w-full h-full preserve-3d">
               
               {/* Front Glass Panel */}
@@ -330,58 +377,67 @@ export default function App() {
       </main>
 
       {/* Bottom Control Deck */}
-      <div className="absolute bottom-0 left-0 right-0 h-48 z-40 flex flex-col items-center justify-end pb-8 pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 h-40 md:h-48 z-40 flex flex-col items-center justify-end pb-6 md:pb-8 pointer-events-none">
         {/* Vibe Mixer */}
-        <motion.div animate={{ opacity: isUIActive ? 1 : 0, y: isUIActive ? 0 : 20 }} className="flex gap-12 glass-dark px-10 py-4 rounded-full border border-white/5 pointer-events-auto">
-          <div className="flex flex-col gap-1 items-center">
-            <span className="text-[9px] uppercase tracking-tighter opacity-40">Intensity</span>
-            <input type="range" min="0" max="1" step="0.01" value={intensity} onChange={(e) => setIntensity(parseFloat(e.target.value))} className="w-24 accent-white/50" />
+        <motion.div 
+          animate={{ opacity: isUIActive ? 1 : 0, y: isUIActive ? 0 : 20 }} 
+          className="flex flex-col md:flex-row gap-4 md:gap-12 glass-dark px-6 md:px-10 py-3 md:py-4 rounded-[24px] md:rounded-full border border-white/5 pointer-events-auto items-center"
+        >
+          <div className="flex gap-8 md:gap-12 items-center">
+            <div className="flex flex-col gap-1 items-center">
+              <span className="text-[9px] uppercase tracking-tighter opacity-40">Intensity</span>
+              <input type="range" min="0" max="1" step="0.01" value={intensity} onChange={(e) => setIntensity(parseFloat(e.target.value))} className="w-20 md:w-24 accent-white/50" />
+            </div>
+            <div className="flex flex-col gap-1 items-center">
+              <span className="text-[9px] uppercase tracking-tighter opacity-40">Blur</span>
+              <input 
+                type="range" min="0" max="100" step="1" 
+                defaultValue={blur}
+                onChange={(e) => {
+                  // 高性能滑动：直接操作全局变量，不触发 React 渲染
+                  const val = e.target.value;
+                  document.documentElement.style.setProperty('--glass-blur', `${val}px`);
+                }}
+                onMouseUp={(e: any) => setBlur(Number(e.target.value))}
+                onTouchEnd={(e: any) => setBlur(Number(e.target.value))}
+                className="w-20 md:w-24 accent-white/50" 
+              />
+            </div>
           </div>
-          <div className="flex flex-col gap-1 items-center">
-            <span className="text-[9px] uppercase tracking-tighter opacity-40">Blur</span>
-            <input 
-              type="range" min="0" max="100" step="1" 
-              defaultValue={blur}
-              onChange={(e) => {
-                // 高性能滑动：直接操作 DOM，不触发 React 渲染
-                const val = e.target.value;
-                frontGlassRef.current?.style.setProperty('--glass-blur', `${val}px`);
-                backGlassRef.current?.style.setProperty('--glass-blur', `${val}px`);
-              }}
-              onMouseUp={(e: any) => setBlur(Number(e.target.value))}
-              className="w-24 accent-white/50" 
-            />
-          </div>
-          <div 
-            className="relative"
-            onMouseEnter={() => setIsAudioSettingsOpen(true)}
-            onMouseLeave={() => setIsAudioSettingsOpen(false)}
-          >
-            <button className={cn("p-2 rounded-full transition-all", isAudioSettingsOpen ? "bg-white/20" : "hover:bg-white/10")}>
-              <Volume2 size={18} />
-            </button>
 
-            <AnimatePresence>
-              {isAudioSettingsOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }} 
-                  animate={{ opacity: 1, y: -10, scale: 1 }} 
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }} 
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 glass-dark p-6 rounded-[32px] flex flex-col gap-4 z-50 min-w-[180px] border border-white/5"
-                >
-                   <div className="flex flex-col gap-1">
-                     <span className="text-[9px] uppercase opacity-40">Music</span>
-                     <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-full accent-white/50" />
-                   </div>
-                   <div className="flex flex-col gap-1">
-                     <span className="text-[9px] uppercase opacity-40">Ambient</span>
-                     <input type="range" min="0" max="1" step="0.01" value={mode === 'rain' ? rainVolume : snowVolume} onChange={(e) => mode === 'rain' ? setRainVolume(parseFloat(e.target.value)) : setSnowVolume(parseFloat(e.target.value))} className="w-full accent-white/50" />
-                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="flex items-center gap-4 md:gap-6">
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsAudioSettingsOpen(true)}
+              onMouseLeave={() => setIsAudioSettingsOpen(false)}
+              onClick={() => setIsAudioSettingsOpen(!isAudioSettingsOpen)}
+            >
+              <button className={cn("p-2 rounded-full transition-all", isAudioSettingsOpen ? "bg-white/20" : "hover:bg-white/10")}>
+                <Volume2 size={18} />
+              </button>
+
+              <AnimatePresence>
+                {isAudioSettingsOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                    animate={{ opacity: 1, y: -10, scale: 1 }} 
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }} 
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 glass-dark p-6 rounded-3xl flex flex-col gap-4 z-50 min-w-[180px] border border-white/5"
+                  >
+                     <div className="flex flex-col gap-1">
+                       <span className="text-[9px] uppercase opacity-40">Music</span>
+                       <input type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(parseFloat(e.target.value))} className="w-full accent-white/50" />
+                     </div>
+                     <div className="flex flex-col gap-1">
+                       <span className="text-[9px] uppercase opacity-40">Ambient</span>
+                       <input type="range" min="0" max="1" step="0.01" value={mode === 'rain' ? rainVolume : snowVolume} onChange={(e) => mode === 'rain' ? setRainVolume(parseFloat(e.target.value)) : setSnowVolume(parseFloat(e.target.value))} className="w-full accent-white/50" />
+                     </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <button onClick={exportToTxt} className="p-2 hover:bg-white/10 rounded-full transition-all"><Download size={16} className="opacity-60" /></button>
           </div>
-          <button onClick={exportToTxt} className="p-2 hover:bg-white/10 rounded-full transition-all"><Download size={16} className="opacity-60" /></button>
         </motion.div>
       </div>
 
