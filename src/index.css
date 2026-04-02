@@ -49,7 +49,7 @@ body {
 
 /* 完美恢复原始设计 + 强制硬件加速 */
 .glass {
-  background: rgba(255, 255, 240, 0.3);
+  background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.2);
   
   backdrop-filter: blur(var(--glass-blur, 20px));
