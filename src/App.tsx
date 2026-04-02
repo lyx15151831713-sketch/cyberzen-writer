@@ -67,10 +67,22 @@ export default function App() {
   const [mode, setMode] = useState<Mode>(() => (localStorage.getItem('zen-mode') as Mode) || 'rain');
   const [content, setContent] = useState(() => localStorage.getItem('zen-content') || '');
   const [intensity, setIntensity] = useState(0.5);
-  const [blur, setBlur] = useState(() => Number(localStorage.getItem('zen-blur')) || 20);
-  const [volume, setVolume] = useState(() => Number(localStorage.getItem('zen-volume')) || 0.3);
-  const [rainVolume, setRainVolume] = useState(() => Number(localStorage.getItem('zen-rain-volume')) || 0.5);
-  const [snowVolume, setSnowVolume] = useState(() => Number(localStorage.getItem('zen-snow-volume')) || 0.2);
+  const [blur, setBlur] = useState(() => {
+    const saved = localStorage.getItem('zen-blur');
+    return saved !== null ? Number(saved) : 20;
+  });
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('zen-volume');
+    return saved !== null ? Number(saved) : 0;
+  });
+  const [rainVolume, setRainVolume] = useState(() => {
+    const saved = localStorage.getItem('zen-rain-volume');
+    return saved !== null ? Number(saved) : 0.5;
+  });
+  const [snowVolume, setSnowVolume] = useState(() => {
+    const saved = localStorage.getItem('zen-snow-volume');
+    return saved !== null ? Number(saved) : 0.2;
+  });
   
   const [fontSize, setFontSize] = useState<FontSize>('medium');
   const [fontFamily, setFontFamily] = useState<FontFamily>('sans');
