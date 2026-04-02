@@ -12,7 +12,7 @@
   --bg-color: #050505;
   --text-color: #ffffff;
   /* 注入全局默认 fallback，防止 React 还没挂载时样式崩溃 */
-  --glass-blur: 10px; 
+  --glass-blur: 20px; 
 }
 
 body {
@@ -51,23 +51,31 @@ body {
 
 /* 极致稳定版毛玻璃（已修复生产环境丢帧、失效和 iOS/Safari 兼容性问题） */
 .glass {
-  /* 底色稍微调暗一点，让上方文字更清晰，且保证 blur 能生效 */
-  background: rgba(255, 255, 255, 0.05); 
+  /* 增加底色不透明度，并使用渐变增强质感 */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15),
+    rgba(255, 255, 255, 0.05)
+  );
+  background-clip: padding-box;
   
   /* 核心模糊属性与动态变量绑定 */
-  backdrop-filter: blur(var(--glass-blur, 10px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  backdrop-filter: blur(var(--glass-blur, 20px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
   
-  /* 边框和极弱的阴影，增加空间质感 */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  /* 增强边框可见度，使用半透明白色勾勒 */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   
-  /* 强制 GPU 硬件加速与图层隔离（最核心的防弹衣） */
+  /* 强制 GPU 硬件加速与图层隔离 */
   transform: translateZ(0);
-  -webkit-transform: translateZ(0); /* 兼容老版本 Webkit */
+  -webkit-transform: translateZ(0);
   
-  /* 提前告知显卡需要单独渲染的属性，严防 WebGL 吞噬性能 */
-  will-change: transform, backdrop-filter, -webkit-backdrop-filter;
+  /* 仅保留 transform 在 will-change 中，避免某些浏览器在 backdrop-filter 上过度优化导致失效 */
+  will-change: transform;
+  
+  /* 确保层级隔离，防止滤镜被底层 WebGL 吞噬 */
+  isolation: isolate;
 }
 
 .glass-dark {

@@ -141,9 +141,18 @@ export default function App() {
 
   // Initialize Blur styling safely outside of React's render cycle
   useEffect(() => {
-    const safeVal = Math.max(0.1, blur);
-    if (frontGlassRef.current) frontGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
-    if (backGlassRef.current) backGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+    const applyBlur = (val: number) => {
+      const safeVal = Math.max(0.1, val);
+      if (frontGlassRef.current) frontGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+      if (backGlassRef.current) backGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
+    };
+    
+    // 初始挂载时应用
+    applyBlur(blur);
+    
+    // 某些情况下 DOM 可能还没完全就绪，稍微延迟再次应用确保万无一失
+    const timer = setTimeout(() => applyBlur(blur), 100);
+    return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
