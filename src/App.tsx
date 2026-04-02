@@ -501,90 +501,98 @@ export default function App() {
             className="relative w-full h-full preserve-3d"
           >
             {/* Front: Editor */}
-            <div 
-              ref={frontGlassRef}
-              /* 移除了导致冲突的 style 属性，让 DOM 直接接管 */
-              className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col z-10"
-            >
-              <motion.textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Start your flow..."
-                animate={isClearing ? {
-                  opacity: 0,
-                  y: -200,
-                  x: [0, 20, -20, 10, 0],
-                  filter: "blur(80px) brightness(3) contrast(0.5)",
-                  scale: 1.5,
-                  skewX: [0, 15, -15, 5, 0],
-                } : {
-                  opacity: 1,
-                  y: 0,
-                  x: 0,
-                  filter: "none",
-                  scale: 1,
-                  skewX: 0,
-                }}
-                transition={{ 
-                  duration: 3.0, 
-                  ease: "easeOut",
-                  x: { duration: 3.0, ease: "linear" },
-                  skewX: { duration: 3.0, ease: "linear" }
-                }}
-                className={cn(
-                  "w-full h-full bg-transparent border-none outline-none resize-none font-light leading-relaxed placeholder:text-white/10 overflow-y-auto custom-scrollbar",
-                  fontSize === 'small' && "text-sm",
-                  fontSize === 'medium' && "text-lg",
-                  fontSize === 'large' && "text-2xl",
-                  fontFamily === 'serif' && "font-serif",
-                  fontFamily === 'sans' && "font-sans",
-                  fontFamily === 'mono' && "font-mono",
-                  fontFamily === 'klee' && "font-klee"
-                )}
-              />
+            <div className="absolute inset-0 backface-hidden z-10">
+              <div 
+                ref={frontGlassRef}
+                className="w-full h-full glass rounded-2xl p-12 flex flex-col"
+                style={{ 
+                  '--glass-blur': `${Math.max(0.1, blur)}px` 
+                } as React.CSSProperties}
+              >
+                <motion.textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Start your flow..."
+                  animate={isClearing ? {
+                    opacity: 0,
+                    y: -200,
+                    x: [0, 20, -20, 10, 0],
+                    filter: "blur(80px) brightness(3) contrast(0.5)",
+                    scale: 1.5,
+                    skewX: [0, 15, -15, 5, 0],
+                  } : {
+                    opacity: 1,
+                    y: 0,
+                    x: 0,
+                    filter: "none",
+                    scale: 1,
+                    skewX: 0,
+                  }}
+                  transition={{ 
+                    duration: 3.0, 
+                    ease: "easeOut",
+                    x: { duration: 3.0, ease: "linear" },
+                    skewX: { duration: 3.0, ease: "linear" }
+                  }}
+                  className={cn(
+                    "w-full h-full bg-transparent border-none outline-none resize-none font-light leading-relaxed placeholder:text-white/10 overflow-y-auto custom-scrollbar",
+                    fontSize === 'small' && "text-sm",
+                    fontSize === 'medium' && "text-lg",
+                    fontSize === 'large' && "text-2xl",
+                    fontFamily === 'serif' && "font-serif",
+                    fontFamily === 'sans' && "font-sans",
+                    fontFamily === 'mono' && "font-mono",
+                    fontFamily === 'klee' && "font-klee"
+                  )}
+                />
 
-              {/* Editor Actions */}
-              <div className="absolute bottom-6 right-8 flex items-center gap-3">
-                <button 
-                  onClick={handleSave}
-                  className="p-2 glass-dark rounded-full hover:bg-white/10 transition-all group relative"
-                >
-                  {isSaved ? <Check size={16} className="text-green-400" /> : <Save size={16} className="opacity-40 group-hover:opacity-80" />}
-                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    {isSaved ? 'Saved' : 'Save'}
-                  </span>
-                </button>
-                <button 
-                  onClick={handleClear}
-                  className="p-2 glass-dark rounded-full hover:bg-red-500/20 transition-all group relative"
-                >
-                  <Trash2 size={16} className="opacity-40 group-hover:opacity-80 group-hover:text-red-400" />
-                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Clear
-                  </span>
-                </button>
+                {/* Editor Actions */}
+                <div className="absolute bottom-6 right-8 flex items-center gap-3">
+                  <button 
+                    onClick={handleSave}
+                    className="p-2 glass-dark rounded-full hover:bg-white/10 transition-all group relative"
+                  >
+                    {isSaved ? <Check size={16} className="text-green-400" /> : <Save size={16} className="opacity-40 group-hover:opacity-80" />}
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      {isSaved ? 'Saved' : 'Save'}
+                    </span>
+                  </button>
+                  <button 
+                    onClick={handleClear}
+                    className="p-2 glass-dark rounded-full hover:bg-red-500/20 transition-all group relative"
+                  >
+                    <Trash2 size={16} className="opacity-40 group-hover:opacity-80 group-hover:text-red-400" />
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                      Clear
+                    </span>
+                  </button>
+                </div>
               </div>
             </div>
 
             {/* Back: Flashcard */}
-            <div 
-              ref={backGlassRef}
-              /* 同样移除了这里的 style 属性 */
-              className="absolute inset-0 backface-hidden glass rounded-2xl p-12 flex flex-col items-center justify-center text-center rotate-y-180 z-10"
-            >
-              <div className="space-y-6">
-                <h3 className="font-serif italic text-3xl text-white/80">Flow Insight</h3>
-                <p className="text-lg font-light text-white/60 max-w-md">
-                  "The best way to predict the future is to create it." 
-                  <br />
-                  <span className="text-sm mt-4 block opacity-40">— Peter Drucker</span>
-                </p>
-                <button 
-                  onClick={() => setIsFlipped(false)}
-                  className="mt-8 px-8 py-3 glass-dark rounded-full text-xs uppercase tracking-widest hover:bg-white/10 transition-colors"
-                >
-                  Return to Flow
-                </button>
+            <div className="absolute inset-0 backface-hidden rotate-y-180 z-10">
+              <div 
+                ref={backGlassRef}
+                className="w-full h-full glass rounded-2xl p-12 flex flex-col items-center justify-center text-center"
+                style={{ 
+                  '--glass-blur': `${Math.max(0.1, blur)}px` 
+                } as React.CSSProperties}
+              >
+                <div className="space-y-6">
+                  <h3 className="font-serif italic text-3xl text-white/80">Flow Insight</h3>
+                  <p className="text-lg font-light text-white/60 max-w-md">
+                    "The best way to predict the future is to create it." 
+                    <br />
+                    <span className="text-sm mt-4 block opacity-40">— Peter Drucker</span>
+                  </p>
+                  <button 
+                    onClick={() => setIsFlipped(false)}
+                    className="mt-8 px-8 py-3 glass-dark rounded-full text-xs uppercase tracking-widest hover:bg-white/10 transition-colors"
+                  >
+                    Return to Flow
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -707,16 +715,15 @@ export default function App() {
             <span className="text-[9px] uppercase tracking-tighter opacity-40">Blur</span>
             <input 
               type="range" min="0" max="100" step="1" 
-              defaultValue={blur}
+              value={blur}
               onChange={(e) => {
-                // 完全绕过 React 的状态更新机制，每秒 60 帧丝滑改变 DOM，不会被打断
                 const val = parseInt(e.target.value);
+                setBlur(val);
+                // 同时直接更新 DOM 以获得极致响应速度，防止 React 渲染队列延迟
                 const safeVal = Math.max(0.1, val);
                 if (frontGlassRef.current) frontGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
                 if (backGlassRef.current) backGlassRef.current.style.setProperty('--glass-blur', `${safeVal}px`);
               }}
-              onMouseUp={(e) => setBlur(parseInt((e.target as HTMLInputElement).value))}
-              onTouchEnd={(e) => setBlur(parseInt((e.target as HTMLInputElement).value))}
               className="w-24 accent-white/50 cursor-pointer pointer-events-auto"
             />
           </div>
