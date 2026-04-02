@@ -11,6 +11,8 @@
 :root {
   --bg-color: #050505;
   --text-color: #ffffff;
+  /* 初始化全局变量，防止首屏闪烁 */
+  --glass-blur: 20px; 
 }
 
 body {
@@ -23,7 +25,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for Editor */
+/* 编辑器专属滚动条：极简、半透明 */
 .custom-scrollbar::-webkit-scrollbar {
   display: block;
   width: 4px;
@@ -47,27 +49,29 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
-/* 完美恢复原始设计 + 强制硬件加速 */
+/* 核心：Flow-Space 同款毛玻璃参数 */
 .glass {
-  background: rgba(255, 255, 255, 0.2);
+  /* 10% 白色底色 + 20% 透明度边框 */
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   
+  /* 动态模糊绑定 */
   backdrop-filter: blur(var(--glass-blur, 20px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 20px));
   
-  /* 解决生产环境掉帧、失效的防弹底层 */
+  /* 强制 GPU 渲染加速层 */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: transform, backdrop-filter, -webkit-backdrop-filter;
+  
+  /* 柔和的阴影增强深度感 */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 .glass-dark {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  
   transform: translateZ(0);
-  -webkit-transform: translateZ(0);
 }
